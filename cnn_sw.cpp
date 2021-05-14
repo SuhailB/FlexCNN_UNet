@@ -165,6 +165,7 @@ void preprocess(
 
     for (int w = 0; w < 2*16*16*9; w++){
       weight_file >> weight_hw[w];
+      // weight_hw[w] = 1.0;
     }
 
     weight_file.close();

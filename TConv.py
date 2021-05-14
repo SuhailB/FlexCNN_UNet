@@ -15,14 +15,18 @@ from tensorflow import keras
 def TCONV():
   inputs = keras.layers.Input((32, 32, 16))
   # outputs = keras.layers.UpSampling2D((2, 2))(inputs)
-  outputs = keras.layers.Conv2DTranspose(filters=16, kernel_size=(3, 3), strides=(2, 2), padding='same', output_padding=1, dilation_rate=(1, 1), activation="relu")(inputs)
+  outputs = keras.layers.Conv2DTranspose(filters=16, kernel_size=(3, 3), strides=(2, 2), padding='valid', dilation_rate=(1, 1), activation="relu")(inputs)
   # outputs = keras.layers.Conv2D(filters=16, kernel_size=(3, 3), padding="same", strides=1, activation="relu")(up)
   model = keras.models.Model(inputs, outputs)
   return model
 
 model = TCONV()
-
+np.random.seed(42)
+x = np.random.rand(1,32,32,16)
 x = np.ones((1,32,32,16))
+
+# x.tofile("D:/Winter2021/Research/FlexCNN/SDx_project/FlexCNN_opt/inputs.dat", sep="\n", format="%s")
+
 
 # x_ = x
 # x_[0][0] = 0

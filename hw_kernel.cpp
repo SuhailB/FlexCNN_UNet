@@ -4679,7 +4679,7 @@ void U1_compute(
         if (la_counter == LAYER_LOCAL_ACCUM_NUM){
           la_counter = 0;
           i++;
-          start_index = (i%K_NUM)*LAYER_LOCAL_REG_NUM;
+          start_index = i*LAYER_LOCAL_REG_NUM;
           local_reg_id = start_index;
           LAYER_LOCAL_ACCUM_NUM = in_ch_factor*((KH_KW<<i*4)>>28)*((KH_KW<<(i+4)*4)>>28);
           if(i == K_NUM){
@@ -11653,28 +11653,25 @@ void weight_load(
 		bus_t1                           *global_weight,
 		bus_t2                           *global_bias,
 		hls::stream<ConfigInst>          &fifo_config_in,
-		hls::stream<WeightLoadData0Type> &fifo_depth_conv_weight,
 		hls::stream<WeightLoadData1Type> &fifo_conv_weight,
-		hls::stream<ConvData0Type>       &fifo_gamma_depth,
-		hls::stream<ConvData0Type>       &fifo_beta_depth,
 		hls::stream<ConvData0Type>       &fifo_gamma_conv,
 		hls::stream<ConvData0Type>       &fifo_beta_conv,
 		hls::stream<ConfigInst>          &fifo_config_out
 ){
 #pragma HLS INLINE off 
 	// on-chip buffers
-	bus_t1 weight_burst_buf1[IN_NUM_T * K_T * K_T / BUS_PACK_FACTOR1];
+	// bus_t1 weight_burst_buf1[IN_NUM_T * K_T * K_T / BUS_PACK_FACTOR1];
 	bus_t1 weight_burst_buf2[OUT_NUM_T * IN_NUM_T * K_T * K_T / BUS_PACK_FACTOR1];
 //	bus_t2 bias_burst_buf[OUT_NUM_T / BUS_PACK_FACTOR2];
-	bus_t2 beta_depth_burst_buf[IN_NUM_T / BUS_PACK_FACTOR2];
-	bus_t2 gamma_depth_burst_buf[IN_NUM_T / BUS_PACK_FACTOR2];
+	// bus_t2 beta_depth_burst_buf[IN_NUM_T / BUS_PACK_FACTOR2];
+	// bus_t2 gamma_depth_burst_buf[IN_NUM_T / BUS_PACK_FACTOR2];
 	bus_t2 beta_conv_burst_buf[OUT_NUM_T / BUS_PACK_FACTOR2];
 	bus_t2 gamma_conv_burst_buf[OUT_NUM_T / BUS_PACK_FACTOR2];
-#pragma HLS RESOURCE variable=weight_burst_buf1 core=XPM_MEMORY uram
+// #pragma HLS RESOURCE variable=weight_burst_buf1 core=XPM_MEMORY uram
 #pragma HLS RESOURCE variable=weight_burst_buf2 core=XPM_MEMORY uram  
 //#pragma HLS RESOURCE variable=bias_burst_buf core=XPM_MEMORY uram
-#pragma HLS RESOURCE variable=beta_depth_burst_buf core=XPM_MEMORY uram
-#pragma HLS RESOURCE variable=gamma_depth_burst_buf core=XPM_MEMORY uram
+// #pragma HLS RESOURCE variable=beta_depth_burst_buf core=XPM_MEMORY uram
+// #pragma HLS RESOURCE variable=gamma_depth_burst_buf core=XPM_MEMORY uram
 #pragma HLS RESOURCE variable=beta_conv_burst_buf core=XPM_MEMORY uram
 #pragma HLS RESOURCE variable=gamma_conv_burst_buf core=XPM_MEMORY uram
 
@@ -11833,14 +11830,14 @@ void weight_load(
 		} else{
 
       	// Load batch normalization info for depth conv
-      	if (norm_depth_en){
-      		uint global_beta_offset = beta_depth_offset + in_num_iter;
-      		memcpy((void*)beta_depth_burst_buf, (void*)&global_bias[global_beta_offset / BUS_PACK_FACTOR2], sizeof(data_t2) * LAYER_IN_NUM_T);
+      	// if (norm_depth_en){
+      	// 	uint global_beta_offset = beta_depth_offset + in_num_iter;
+      	// 	memcpy((void*)beta_depth_burst_buf, (void*)&global_bias[global_beta_offset / BUS_PACK_FACTOR2], sizeof(data_t2) * LAYER_IN_NUM_T);
       		
-      		uint global_gamma_offset = gamma_depth_offset + in_num_iter;
-      		memcpy((void*)gamma_depth_burst_buf, (void*)&global_bias[global_gamma_offset / BUS_PACK_FACTOR2], sizeof(data_t2) * LAYER_IN_NUM_T);
+      	// 	uint global_gamma_offset = gamma_depth_offset + in_num_iter;
+      	// 	memcpy((void*)gamma_depth_burst_buf, (void*)&global_bias[global_gamma_offset / BUS_PACK_FACTOR2], sizeof(data_t2) * LAYER_IN_NUM_T);
       		
-      	}
+      	// }
       
       	// Load batch normalization info for conv
       	if (norm_conv_en){
@@ -11867,15 +11864,15 @@ void weight_load(
 #endif
 
 		// Load weights of the depth conv module
-		if (DEPTH_CONV_EN == 1){
-			// load from DRAM
-			uint global_weight_offset = weight_offset1 + in_num_iter * FILTER_S1 * FILTER_S1;
-			if (FILTER_S1 == 1){
-				memcpy((void*)&weight_burst_buf1, (void*)&global_weight[global_weight_offset / BUS_PACK_FACTOR1], sizeof(data_t1) * LAYER_IN_NUM_T * 1 * 1);
-			} else if (FILTER_S1 == 3){
-				memcpy((void*)&weight_burst_buf1, (void*)&global_weight[global_weight_offset / BUS_PACK_FACTOR1], sizeof(data_t1) * LAYER_IN_NUM_T * 3 * 3);
-			}
-		}
+		// if (DEPTH_CONV_EN == 1){
+		// 	// load from DRAM
+		// 	uint global_weight_offset = weight_offset1 + in_num_iter * FILTER_S1 * FILTER_S1;
+		// 	if (FILTER_S1 == 1){
+		// 		memcpy((void*)&weight_burst_buf1, (void*)&global_weight[global_weight_offset / BUS_PACK_FACTOR1], sizeof(data_t1) * LAYER_IN_NUM_T * 1 * 1);
+		// 	} else if (FILTER_S1 == 3){
+		// 		memcpy((void*)&weight_burst_buf1, (void*)&global_weight[global_weight_offset / BUS_PACK_FACTOR1], sizeof(data_t1) * LAYER_IN_NUM_T * 3 * 3);
+		// 	}
+		// }
 		// Load weights of the conv module
 		if (CONV_EN == 1){
 			uint global_weight_offset = weight_offset2 + out_num_iter * LAYER_IN_NUM_HW * FILTER_S2 * FILTER_S2 + in_num_iter * LAYER_OUT_NUM_T * FILTER_S2 * FILTER_S2;
@@ -11891,7 +11888,7 @@ void weight_load(
 		cout << "loaded weights" << endl;
 #endif
 		// Fill the FIFOs with the loaded data
-		weight_load_depth_conv_weight_write(weight_burst_buf1, fifo_depth_conv_weight, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
+		// weight_load_depth_conv_weight_write(weight_burst_buf1, fifo_depth_conv_weight, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
 
 #ifdef DEBUG_weight
 		cout << "loaded weights" << endl;
@@ -11915,8 +11912,8 @@ void weight_load(
 			weight_load_bias_write(gamma_conv_burst_buf, fifo_gamma_conv, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
 		}
 
-		weight_load_depth_norm_write(beta_depth_burst_buf, fifo_beta_depth, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
-		weight_load_depth_norm_write(gamma_depth_burst_buf, fifo_gamma_depth, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
+		// weight_load_depth_norm_write(beta_depth_burst_buf, fifo_beta_depth, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
+		// weight_load_depth_norm_write(gamma_depth_burst_buf, fifo_gamma_depth, inst0, inst1, inst2, inst3, in_num_iter, out_num_iter);
 #ifdef DEBUG_weight
 		cout << in_num_iter << " in num iter " << endl;
 #endif
@@ -14482,7 +14479,7 @@ void cout_write_fifo_read(
 	if (en == 0 && up_sample == 0) write = 0; // normal writing
 	else if (en == 1 && up_sample == 0) write = 1; // writing after pooling
 	else if (up_sample == 1) write = 2; // writing after upsampling
-  cout<<"cout_write_fifo_read: "<<write<<endl;
+  // cout<<"cout_write_fifo_read: "<<write<<endl;
 	// Should store the data as Th * Tw * Tn
 	// write = 2;
 	switch(write){
@@ -14707,7 +14704,7 @@ void cout_write_ddr_write(
 	// If filter size is 1, the data layout should change to ceil(N / Tn) * ceil(H / Th) * ceil(W / Tw) * Th * Tw * Tn
 	if (change_layout) write += 3; 
 
-  cout<<"cout_write_ddr_write: "<<write<<endl;
+  // cout<<"cout_write_ddr_write: "<<write<<endl;
   // write = 2;
 	if (run){
 		switch(write){
@@ -15180,7 +15177,7 @@ void engine(
 		bus_t2 *global_bias,
 		bus_t0 *global_cout,
 		uint    config[CONFIG_PARAMS],
-    uint layer_id
+    uint   layer_id
 ){
 #pragma HLS DATAFLOW
 	/**
@@ -15318,9 +15315,9 @@ void engine(
 //#pragma HLS STREAM variable=config_inter_write depth=16
 #pragma HLS STREAM variable=config_data_write depth=16
 
-  layer_id++;
+  // layer_id++;
 
-#define DEBUG_engine
+// #define DEBUG_engine
 #ifdef DEBUG_engine
 	cout << "start" << endl;
 #endif
@@ -15362,8 +15359,7 @@ void engine(
 	weight_load(
 			global_weight, global_bias,
 			config_weight_load,
-			fifo_weight_load_0, fifo_weight_load_1,
-			fifo_beta_depth, fifo_gamma_depth,
+			fifo_weight_load_1,
 			fifo_beta_conv, fifo_gamma_conv,
 			config_conv
 	);
