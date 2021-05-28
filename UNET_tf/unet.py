@@ -162,7 +162,7 @@ def dumpLayerWeights(layerIndex):
     layer = model.get_layer(index=layerIndex)
     if len(layer.get_weights())>1:
         w = layer.get_weights()[0]
-        print(w.shape)
+        print('before' , w.shape)
         w = np.swapaxes(w,2,1)
         w = np.swapaxes(w,1,0)
         if layerIndex==1:
@@ -170,7 +170,7 @@ def dumpLayerWeights(layerIndex):
             w = np.concatenate((w, w_z), axis=0)
         w = np.swapaxes(w,0,3)
         w = np.swapaxes(w,1,2)
-        # print(w.shape)
+        print('after', w.shape)
         w.tofile("D:/Winter2021/Research/FlexCNN/SDx_project/FlexCNN_opt/data/L"+str(layerIndex)+"_weights.dat", sep="\n", format="%s")
         return "D:/Winter2021/Research/FlexCNN/SDx_project/FlexCNN_opt/data/L"+str(layerIndex)+"_weights.dat"
     else:

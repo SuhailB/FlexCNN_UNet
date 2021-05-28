@@ -4,7 +4,7 @@
 
 // #define SAVING
 
-#define LOAD_PROGRESS
+// #define LOAD_PROGRESS
 
 #ifdef SAVING
   #define SAVE_PROGRESS
@@ -62,7 +62,7 @@ int main(){
   postprocess(cin_hw, outputs_hw, outputs_py);
 
   // cout<<"HARDWARE"<<endl;
-  // for(int ch=0; ch<OUT_NUM; ch++){
+  // for(int ch=0; ch<3; ch++){
   //   printf("---------------------channel %d--------------------\n", ch);
   //   for(int h=0; h<OUT_H; h++){
   //     for(int w=0; w<OUT_W; w++){
@@ -72,7 +72,7 @@ int main(){
   //   }
   // }
   // cout<<"SOFTWARE"<<endl;
-  // for(int ch=0; ch<OUT_NUM; ch++){
+  // for(int ch=0; ch<3; ch++){
   //   printf("---------------------channel %d--------------------\n", ch);
   //   for(int h=0; h<OUT_H; h++){
   //     for(int w=0; w<OUT_W; w++){

@@ -73,6 +73,7 @@ for line in inFile:
     values = line.split()
     if(len(values)!=0):
       if(values[0]=="#define" and values[1]=="LAYER"):
+        outFile.writelines("#define FILTER_S2 "+str(instDict['FILTER_S2'])+"\n")
         outFile.writelines("#define LAYER "+str(layerIndex)+"\n")
       elif(values[0]=="#define" and values[1]=="OUTFILE"):
         outFile.writelines("#define OUTFILE \"/data/L"+str(layerIndex)+"_outputs.dat\"\n")
@@ -101,6 +102,6 @@ for line in inFile:
 outFile.close()
 inFile.close()
 
-os.system("conda activate tf")
-os.system("D:/Programs/Anaconda/envs/tf/python.exe d:/Winter2021/Research/FlexCNN/SDx_project/FlexCNN_opt/UNET_tf/unet.py "+str(layerIndex))
+# os.system("conda activate tf")
+# os.system("D:/Programs/Anaconda/envs/tf/python.exe d:/Winter2021/Research/FlexCNN/SDx_project/FlexCNN_opt/UNET_tf/unet.py "+str(layerIndex))
 os.system("UNET.bat sim")
